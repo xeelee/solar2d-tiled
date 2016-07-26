@@ -1,10 +1,43 @@
 local json = require "json"
 
-local function Element(id, classes, layerName)
+local function Tile(firstGid, image, tileWidth, tileHeight, imageWidth, imageHeight)
+  local self = {
+    firstGid = firstGid,
+    image = image,
+    tileWidth = tileWidth,
+    tileHeight = tileHeight,
+    imageWidth = imageWidth,
+    imageHeight = imageHeight
+  }
+
+  function self.asSheetInfo(tileGid)
+    return {
+      fileName = self.image,
+      width = self.tileWidth,
+      height = self.tileHeight,
+      numFrames = self.getNumFrames(),
+      id = tileGid - self.firstGid + 1
+    }
+  end
+
+  function self.getNumFrames()
+    return (self.imageWidth / self.tileWidth) * (self.imageHeight / self.tileHeight)
+  end
+
+  return self
+end
+
+local function Element(id, classes, layerName, tileGid)
   local self = {}
   self.id = id
   self.classes = classes
   self.layerName = layerName
+  self.tileGid = tileGid
+
+  function self.getSheetInfo(selector)
+    return selector.findTileByGid(self.tileGid).asSheetInfo(self.tileGid)
+  end
+
   return self
 end
 
@@ -13,7 +46,7 @@ local function TiledJsonAdapter(jsonString)
 
   local jsonTable = json.decode(jsonString)
 
-  function self.getDataIterator()
+  function self.getElementDataIterator()
     local layerIdx = 1
     local objectIdx = 1
     return function()
@@ -35,7 +68,20 @@ local function TiledJsonAdapter(jsonString)
     end
   end
 
-  function self.adaptData(data)
+  function self.getTileDataIterator()
+    local tilesetIdx = 1
+    return function()
+      while tilesetIdx <= #jsonTable.tilesets do
+        local tileset = jsonTable.tilesets[tilesetIdx]
+        tilesetIdx = tilesetIdx + 1
+        return {
+          object = tileset
+        }
+      end
+    end
+  end
+
+  function self.adaptElementData(data)
     local classes = {}
     if data.object.properties ~= nil then
       if data.object.properties.class ~= nil then
@@ -43,8 +89,16 @@ local function TiledJsonAdapter(jsonString)
           table.insert(classes, class)
         end
       end
-      return Element(data.object.properties.id, classes, data.layerName)
+      return Element(data.object.properties.id, classes, data.layerName, data.object.gid)
     end
+  end
+
+  function self.adaptTileData(data)
+    return Tile(
+      data.object.firstgid, data.object.image,
+      data.object.tilewidth, data.object.tileheight,
+      data.object.imagewidth, data.object.imageheight
+    )
   end
 
   return self
@@ -57,9 +111,9 @@ local function Selector(elementAdapter)
     byId = {},
     byClass = {}
   }
-  local iterator = elementAdapter.getDataIterator()
-  for data in iterator do
-    element = elementAdapter.adaptData(data)
+  local elementDataIterator = elementAdapter.getElementDataIterator()
+  for data in elementDataIterator do
+    element = elementAdapter.adaptElementData(data)
     if element ~= nil then
       if element.id ~= nil then
         elementIndex.byId[element.id] = element
@@ -71,12 +125,29 @@ local function Selector(elementAdapter)
     end
   end
 
-  function self.getById(id)
+  local tiles = {}
+  local tileDataIterator = elementAdapter.getTileDataIterator()
+  for data in tileDataIterator do
+    local tile = elementAdapter.adaptTileData(data)
+    for i=1, tile.getNumFrames() do
+      tiles[tile.firstGid + i] = tile
+    end
+  end
+
+  function self.getElementById(id)
     return elementIndex.byId[id]
   end
 
-  function self.findByClass(class)
+  function self.findElementsByClass(class)
     return elementIndex.byClass[class]
+  end
+
+  function self.findTiles()
+    return tiles
+  end
+
+  function self.findTileByGid(id)
+    return tiles[id]
   end
 
   return self
