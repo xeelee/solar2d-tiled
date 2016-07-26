@@ -27,15 +27,16 @@ local function Tile(firstGid, image, tileWidth, tileHeight, imageWidth, imageHei
   return self
 end
 
-local function Element(id, classes, layerName, tileGid)
+local function Element(selector, id, classes, layerName, tileGid)
   local self = {}
+  self.selector = selector
   self.id = id
   self.classes = classes
   self.layerName = layerName
   self.tileGid = tileGid
 
-  function self.getSheetInfo(selector)
-    return selector.findTileByGid(self.tileGid).asSheetInfo(self.tileGid)
+  function self.getSheetInfo()
+    return self.selector.findTileByGid(self.tileGid).asSheetInfo(self.tileGid)
   end
 
   return self
@@ -81,7 +82,7 @@ local function TiledJsonAdapter(jsonString)
     end
   end
 
-  function self.adaptElementData(data)
+  function self.adaptElementData(selector, data)
     local classes = {}
     if data.object.properties ~= nil then
       if data.object.properties.class ~= nil then
@@ -89,11 +90,11 @@ local function TiledJsonAdapter(jsonString)
           table.insert(classes, class)
         end
       end
-      return Element(data.object.properties.id, classes, data.layerName, data.object.gid)
+      return Element(selector, data.object.properties.id, classes, data.layerName, data.object.gid)
     end
   end
 
-  function self.adaptTileData(data)
+  function self.adaptTileData(selector, data)
     return Tile(
       data.object.firstgid, data.object.image,
       data.object.tilewidth, data.object.tileheight,
@@ -113,7 +114,7 @@ local function Selector(elementAdapter)
   }
   local elementDataIterator = elementAdapter.getElementDataIterator()
   for data in elementDataIterator do
-    element = elementAdapter.adaptElementData(data)
+    element = elementAdapter.adaptElementData(self, data)
     if element ~= nil then
       if element.id ~= nil then
         elementIndex.byId[element.id] = element
@@ -128,7 +129,7 @@ local function Selector(elementAdapter)
   local tiles = {}
   local tileDataIterator = elementAdapter.getTileDataIterator()
   for data in tileDataIterator do
-    local tile = elementAdapter.adaptTileData(data)
+    local tile = elementAdapter.adaptTileData(self, data)
     for i=1, tile.getNumFrames() do
       tiles[tile.firstGid + i] = tile
     end

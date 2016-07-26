@@ -18,7 +18,7 @@ test["compare element found by id to the one found by class"] = function()
 end
 
 test["get tile sheet info"] = function()
-  local sheetInfo = mainBrownElement.getSheetInfo(selector)
+  local sheetInfo = mainBrownElement.getSheetInfo()
   assert(sheetInfo.width == 64)
   assert(sheetInfo.height == 64)
   assert(sheetInfo.fileName == "example.png")
@@ -26,7 +26,7 @@ test["get tile sheet info"] = function()
 end
 
 test["display element"] = function()
-  local sheetInfo = mainBrownElement.getSheetInfo(selector)
+  local sheetInfo = mainBrownElement.getSheetInfo()
   local options = {
     width = sheetInfo.width,
     height = sheetInfo.height,
