@@ -1,10 +1,10 @@
 local json = require "json"
 
-local function Element(data, id, classes)
+local function Element(id, classes, layerName)
   local self = {}
-  self.data = data
   self.id = id
   self.classes = classes
+  self.layerName = layerName
   return self
 end
 
@@ -14,26 +14,37 @@ local function TiledJsonAdapter(jsonString)
   local jsonTable = json.decode(jsonString)
 
   function self.getDataIterator()
-    local empty = false
+    local layerIdx = 1
+    local objectIdx = 1
     return function()
-      if empty == false then
-        empty = true
-        return {
-          properties = {
-            id = "test-id-1",
-            class = "green blue"
-          }
-        }
+      while layerIdx <= #jsonTable.layers do
+        local layer = jsonTable.layers[layerIdx]
+        if layer.objects ~= nil then
+          while objectIdx <= #layer.objects do
+            local object = layer.objects[objectIdx]
+            objectIdx = objectIdx + 1
+            return {
+              object = object,
+              layerName = layer.name
+            }
+          end
+        end
+        objectIdx = 1
+        layerIdx = layerIdx + 1
       end
     end
   end
 
   function self.adaptData(data)
     local classes = {}
-    for class in string.gmatch(data.properties.class, "[^%s]+") do
-      table.insert(classes, class)
+    if data.object.properties ~= nil then
+      if data.object.properties.class ~= nil then
+        for class in string.gmatch(data.object.properties.class, "[^%s]+") do
+          table.insert(classes, class)
+        end
+      end
+      return Element(data.object.properties.id, classes, data.layerName)
     end
-    return Element(data, data.properties.id, classes)
   end
 
   return self
@@ -49,10 +60,14 @@ local function Selector(elementAdapter)
   local iterator = elementAdapter.getDataIterator()
   for data in iterator do
     element = elementAdapter.adaptData(data)
-    elementIndex.byId[element.id] = element
-    for idx, class in ipairs(element.classes) do
-      if elementIndex.byClass[class] == nil then elementIndex.byClass[class] = {} end
-      table.insert(elementIndex.byClass[class], element)
+    if element ~= nil then
+      if element.id ~= nil then
+        elementIndex.byId[element.id] = element
+      end
+      for idx, class in ipairs(element.classes) do
+        if elementIndex.byClass[class] == nil then elementIndex.byClass[class] = {} end
+        table.insert(elementIndex.byClass[class], element)
+      end
     end
   end
 
