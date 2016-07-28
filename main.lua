@@ -1,9 +1,10 @@
 display.setStatusBar(display.HiddenStatusBar)
 
 local tiled = require "tiled"
-local selector = tiled.create("example1.json")
-local brownElements = selector.findElementsByClass("brown")
-local mainBrownElement = selector.getElementById("brown-main-thing")
+local exampleTable1 = require "example1"
+local selector = tiled.createSelector(exampleTable1)
+local brownElements = selector.findObjectsByClass("brown")
+local mainBrownElement = selector.getObjectById("brown-main-thing")
 
 
 local testrunner = require "testrunner"
@@ -17,23 +18,23 @@ test["compare element found by id to the one found by class"] = function()
   end
 end
 
-test["get tile sheet info"] = function()
-  local sheetInfo = mainBrownElement.getSheetInfo()
-  assert(sheetInfo.width == 64)
-  assert(sheetInfo.height == 64)
-  assert(sheetInfo.fileName == "example.png")
-  assert(sheetInfo.numFrames == 8)
+test["get tile info"] = function()
+  local tileInfo = mainBrownElement.getTileInfo()
+  assert(tileInfo.width == 64)
+  assert(tileInfo.height == 64)
+  assert(tileInfo.fileName == "example.png")
+  assert(tileInfo.numFrames == 8)
 end
 
 test["display element"] = function()
-  local sheetInfo = mainBrownElement.getSheetInfo()
+  local tileInfo = mainBrownElement.getTileInfo()
   local options = {
-    width = sheetInfo.width,
-    height = sheetInfo.height,
-    numFrames = sheetInfo.numFrames
+    width = tileInfo.width,
+    height = tileInfo.height,
+    numFrames = tileInfo.numFrames
   }
-  local sheet = graphics.newImageSheet(sheetInfo.fileName, options)
-  local frame = display.newImage(sheet, sheetInfo.id)
+  local sheet = graphics.newImageSheet(tileInfo.fileName, options)
+  local frame = display.newImage(sheet, tileInfo.id)
 end
 
 testrunner.run(test)

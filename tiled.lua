@@ -1,6 +1,6 @@
 local json = require "json"
 
-local function Tile(firstGid, image, tileWidth, tileHeight, imageWidth, imageHeight)
+local function Tileset(firstGid, image, tileWidth, tileHeight, imageWidth, imageHeight)
   local self = {
     firstGid = firstGid,
     image = image,
@@ -10,7 +10,7 @@ local function Tile(firstGid, image, tileWidth, tileHeight, imageWidth, imageHei
     imageHeight = imageHeight
   }
 
-  function self.asSheetInfo(tileGid)
+  function self.asTileInfo(tileGid)
     return {
       fileName = self.image,
       width = self.tileWidth,
@@ -27,7 +27,7 @@ local function Tile(firstGid, image, tileWidth, tileHeight, imageWidth, imageHei
   return self
 end
 
-local function Element(selector, id, classes, layerName, tileGid)
+local function Object(selector, id, classes, layerName, tileGid)
   local self = {}
   self.selector = selector
   self.id = id
@@ -35,30 +35,28 @@ local function Element(selector, id, classes, layerName, tileGid)
   self.layerName = layerName
   self.tileGid = tileGid
 
-  function self.getSheetInfo()
-    return self.selector.findTileByGid(self.tileGid).asSheetInfo(self.tileGid)
+  function self.getTileInfo()
+    return self.selector.findTilesetByGid(self.tileGid).asTileInfo(self.tileGid)
   end
 
   return self
 end
 
-local function TiledJsonAdapter(jsonString)
+local function TiledTableAdapter(tiledTable)
   local self = {}
 
-  local jsonTable = json.decode(jsonString)
-
-  function self.getElementDataIterator()
+  function self.getObjectDataIterator()
     local layerIdx = 1
     local objectIdx = 1
     return function()
-      while layerIdx <= #jsonTable.layers do
-        local layer = jsonTable.layers[layerIdx]
+      while layerIdx <= #tiledTable.layers do
+        local layer = tiledTable.layers[layerIdx]
         if layer.objects ~= nil then
           while objectIdx <= #layer.objects do
-            local object = layer.objects[objectIdx]
+            local objectData = layer.objects[objectIdx]
             objectIdx = objectIdx + 1
             return {
-              object = object,
+              objectData = objectData,
               layerName = layer.name
             }
           end
@@ -69,107 +67,94 @@ local function TiledJsonAdapter(jsonString)
     end
   end
 
-  function self.getTileDataIterator()
+  function self.getTilesetDataIterator()
     local tilesetIdx = 1
     return function()
-      while tilesetIdx <= #jsonTable.tilesets do
-        local tileset = jsonTable.tilesets[tilesetIdx]
+      while tilesetIdx <= #tiledTable.tilesets do
+        local tileset = tiledTable.tilesets[tilesetIdx]
         tilesetIdx = tilesetIdx + 1
         return {
-          object = tileset
+          objectData = tileset
         }
       end
     end
   end
 
-  function self.adaptElementData(selector, data)
+  function self.adaptObjectData(selector, data)
     local classes = {}
-    if data.object.properties ~= nil then
-      if data.object.properties.class ~= nil then
-        for class in string.gmatch(data.object.properties.class, "[^%s]+") do
+    if data.objectData.properties ~= nil then
+      if data.objectData.properties.class ~= nil then
+        for class in string.gmatch(data.objectData.properties.class, "[^%s]+") do
           table.insert(classes, class)
         end
       end
-      return Element(selector, data.object.properties.id, classes, data.layerName, data.object.gid)
+      return Object(selector, data.objectData.properties.id, classes, data.layerName, data.objectData.gid)
     end
   end
 
-  function self.adaptTileData(selector, data)
-    return Tile(
-      data.object.firstgid, data.object.image,
-      data.object.tilewidth, data.object.tileheight,
-      data.object.imagewidth, data.object.imageheight
+  function self.adaptTilesetData(selector, data)
+    return Tileset(
+      data.objectData.firstgid, data.objectData.image,
+      data.objectData.tilewidth, data.objectData.tileheight,
+      data.objectData.imagewidth, data.objectData.imageheight
     )
   end
 
   return self
 end
 
-local function Selector(elementAdapter)
+local function Selector(objectAdapter)
   local self = {}
 
-  local elementIndex = {
+  local objectIndex = {
     byId = {},
     byClass = {}
   }
-  local elementDataIterator = elementAdapter.getElementDataIterator()
-  for data in elementDataIterator do
-    element = elementAdapter.adaptElementData(self, data)
-    if element ~= nil then
-      if element.id ~= nil then
-        elementIndex.byId[element.id] = element
+  local objectDataIterator = objectAdapter.getObjectDataIterator()
+  for data in objectDataIterator do
+    object = objectAdapter.adaptObjectData(self, data)
+    if object ~= nil then
+      if object.id ~= nil then
+        objectIndex.byId[object.id] = object
       end
-      for idx, class in ipairs(element.classes) do
-        if elementIndex.byClass[class] == nil then elementIndex.byClass[class] = {} end
-        table.insert(elementIndex.byClass[class], element)
+      for idx, class in ipairs(object.classes) do
+        if objectIndex.byClass[class] == nil then objectIndex.byClass[class] = {} end
+        table.insert(objectIndex.byClass[class], object)
       end
     end
   end
 
   local tiles = {}
-  local tileDataIterator = elementAdapter.getTileDataIterator()
+  local tileDataIterator = objectAdapter.getTilesetDataIterator()
   for data in tileDataIterator do
-    local tile = elementAdapter.adaptTileData(self, data)
+    local tile = objectAdapter.adaptTilesetData(self, data)
     for i=1, tile.getNumFrames() do
       tiles[tile.firstGid + i] = tile
     end
   end
 
-  function self.getElementById(id)
-    return elementIndex.byId[id]
+  function self.getObjectById(id)
+    return objectIndex.byId[id]
   end
 
-  function self.findElementsByClass(class)
-    return elementIndex.byClass[class]
+  function self.findObjectsByClass(class)
+    return objectIndex.byClass[class]
   end
 
-  function self.findTiles()
+  function self.findTilesets()
     return tiles
   end
 
-  function self.findTileByGid(id)
-    return tiles[id]
-  end
-
-  return self
-end
-
-TiledFactory = function()
-  local self = {}
-
-  function self.create(fileName)
-    local file = io.open(fileName)
-    local jsonString = file:read("*all")
-    local elementAdapter = TiledJsonAdapter(jsonString)
-    return Selector(elementAdapter)
+  function self.findTilesetByGid(gid)
+    return tiles[gid]
   end
 
   return self
 end
 
 return {
-  create = function(fileName)
-    local fullPath = system.pathForFile(fileName, system.ResourceDirectory)
-    return TiledFactory().create(fullPath)
+  createSelector = function(tiledTable)
+    local objectAdapter = TiledTableAdapter(tiledTable)
+    return Selector(objectAdapter)
   end
 }
