@@ -1,10 +1,14 @@
-local function Object(selector, id, classes, layerName, tileGid)
+local function Object(selector, id, classes, layerName, tileGid, x, y)
   local self = {}
   self.selector = selector
   self.id = id
   self.classes = classes
   self.layerName = layerName
   self.tileGid = tileGid
+  self.coordinates = {
+    x = x,
+    y = y
+  }
 
   function self.getTileInfo()
     return self.selector.findTilesetByGid(self.tileGid).asTileInfo(self.tileGid)

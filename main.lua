@@ -26,7 +26,7 @@ test["get tile info"] = function()
   assert(tileInfo.numFrames == 8)
 end
 
-test["display element"] = function()
+test["display image"] = function()
   local tileInfo = mainBrownElement.getTileInfo()
   local options = {
     width = tileInfo.width,
@@ -35,6 +35,8 @@ test["display element"] = function()
   }
   local sheet = graphics.newImageSheet(tileInfo.fileName, options)
   local frame = display.newImage(sheet, tileInfo.id)
+  frame.x = mainBrownElement.coordinates.x
+  frame.y = mainBrownElement.coordinates.y
 end
 
 testrunner.run(test)

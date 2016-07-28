@@ -6,22 +6,6 @@ local function ObjectAdapter(...)
     indices = arg
   }
 
-  function self.createIndex()
-    local index = {}
-    for idx, indexObj in ipairs(self.indices) do
-      index[indexObj.idxName] = {}
-    end
-    return index
-  end
-
-  function self.addToIndex(adapted, index)
-    if adapted ~= nil then
-      for idx, indexObj in ipairs(self.indices) do
-        indexObj.apply(adapted, index)
-      end
-    end
-  end
-
   function self.getDataIterator(tiledTable)
     local layerIdx = 1
     local objectIdx = 1
@@ -52,7 +36,11 @@ local function ObjectAdapter(...)
           table.insert(classes, class)
         end
       end
-      return model.Object(selector, data.objectData.properties.id, classes, data.layerName, data.objectData.gid)
+      return model.Object(
+        selector, data.objectData.properties.id, classes,
+        data.layerName, data.objectData.gid,
+        data.objectData.x, data.objectData.y
+      )
     end
   end
 
@@ -60,18 +48,10 @@ local function ObjectAdapter(...)
 end
 
 
-local function TilesetAdapter()
-  local self = {}
-
-  function self.createIndex()
-    return {}
-  end
-
-  function self.addToIndex(adapted, index)
-    for i=1, adapted.getNumFrames() do
-      index[adapted.firstGid + i] = adapted
-    end
-  end
+local function TilesetAdapter(...)
+  local self = {
+    indices = arg
+  }
 
   function self.getDataIterator(tiledTable)
     local tilesetIdx = 1

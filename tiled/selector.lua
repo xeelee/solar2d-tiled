@@ -42,7 +42,13 @@ return {
         }
       end
     )
-    selector.addAdapter(adapter.Tileset(), function(index)
+    selector.addAdapter(adapter.Tileset(
+        index.Range(
+          function(adapted)
+            return adapted.firstGid, adapted.getNumFrames()
+          end
+        )
+      ), function(index)
         return {
           findTilesets = function()
             return index
