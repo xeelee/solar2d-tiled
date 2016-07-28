@@ -1,8 +1,8 @@
 display.setStatusBar(display.HiddenStatusBar)
 
-local tiled = require "tiled"
+local tiledSelector = require "tiled.selector"
 local exampleTable1 = require "example1"
-local selector = tiled.createSelector(exampleTable1)
+local selector = tiledSelector.create(exampleTable1)
 local brownElements = selector.findObjectsByClass("brown")
 local mainBrownElement = selector.getObjectById("brown-main-thing")
 
