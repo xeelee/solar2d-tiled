@@ -29,8 +29,8 @@ return {
   create = function(tiledTable)
     selector = Selector(tiledTable)
     selector.addAdapter(adapter.Object(
-        index.Single("byId", "id"),
-        index.Multi("byClass", "classes")
+        index.One2One("byId", "id"),
+        index.Many2Many("byClass", "classes")
       ), function(index)
         return {
           getObjectById = function(id)
@@ -55,6 +55,16 @@ return {
           end,
           findTilesetByGid = function(gid)
             return index[gid]
+          end
+        }
+      end
+    )
+    selector.addAdapter(adapter.Tile(
+        index.One2Many("byLayerName", "layerName")
+      ), function(index)
+        return {
+          findTilesByLayerName = function(layerName)
+            return index.byLayerName[layerName]
           end
         }
       end

@@ -1,6 +1,51 @@
 local model = require "tiled.model"
 
 
+local function TileAdapter(...)
+  local self = {
+    indices = arg
+  }
+
+  function self.getDataIterator(tiledTable)
+    local layerIdx = 1
+    local dataIdx = 1
+    return function()
+      while layerIdx <= #tiledTable.layers do
+        local layer = tiledTable.layers[layerIdx]
+        if layer.data ~= nil then
+          while dataIdx <= #layer.data do
+            local gid = layer.data[dataIdx]
+            horizontalOffset = ((dataIdx - 1) % layer.width)
+            verticalOffset = math.floor((dataIdx - 1) / layer.width)
+            dataIdx = dataIdx + 1
+            return {
+              objectData = layer,
+              gid = gid,
+              layerName = layer.name,
+              horizontalOffset = horizontalOffset,
+              verticalOffset = verticalOffset
+            }
+          end
+        end
+        dataIdx = 1
+        layerIdx = layerIdx + 1
+      end
+    end
+  end
+
+  function self.adaptData(selector, data)
+    local tile = model.Tile(selector, data.layerName, data.gid)
+    local tileInfo = tile.getTileInfo()
+    local x = data.objectData.x + tileInfo.width * data.horizontalOffset
+    local y = data.objectData.y + tileInfo.height * data.verticalOffset
+    tile.setCoordinates(x, y)
+    return tile
+  end
+
+  return self
+end
+
+
 local function ObjectAdapter(...)
   local self = {
     indices = arg
@@ -37,9 +82,10 @@ local function ObjectAdapter(...)
         end
       end
       return model.Object(
-        selector, data.objectData.properties.id, classes,
+        selector,
         data.layerName, data.objectData.gid,
-        data.objectData.x, data.objectData.y
+        data.objectData.x, data.objectData.y,
+        data.objectData.properties.id, classes
       )
     end
   end
@@ -78,6 +124,7 @@ local function TilesetAdapter(...)
 end
 
 return {
+  Tile = TileAdapter,
   Object = ObjectAdapter,
   Tileset = TilesetAdapter
 }

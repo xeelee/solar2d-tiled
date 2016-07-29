@@ -1,18 +1,30 @@
-local function Object(selector, id, classes, layerName, tileGid, x, y)
-  local self = {}
-  self.selector = selector
-  self.id = id
-  self.classes = classes
-  self.layerName = layerName
-  self.tileGid = tileGid
-  self.coordinates = {
-    x = x,
-    y = y
+local function Tile(selector, layerName, tileGid, x, y)
+  local self = {
+    layerName = layerName,
+    tileGid = tileGid,
+    coordinates = {
+      x = x,
+      y = y
+    }
   }
 
   function self.getTileInfo()
-    return self.selector.findTilesetByGid(self.tileGid).asTileInfo(self.tileGid)
+    return selector.findTilesetByGid(self.tileGid).asTileInfo(self.tileGid)
   end
+
+  function self.setCoordinates(x, y)
+    self.coordinates.x = x
+    self.coordinates.y = y
+  end
+
+  return self
+end
+
+
+local function Object(selector, layerName, tileGid, x, y, id, classes)
+  local self = Tile(selector, layerName, tileGid, x, y)
+  self.id = id
+  self.classes = classes
 
   return self
 end
@@ -47,6 +59,7 @@ end
 
 
 return {
+  Tile = Tile,
   Object = Object,
   Tileset = Tileset
 }

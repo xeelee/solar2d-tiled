@@ -1,3 +1,4 @@
+display.setDefault("isImageSheetSampledInsideFrame", true)
 display.setStatusBar(display.HiddenStatusBar)
 
 local tiledSelector = require "tiled.selector"
@@ -26,7 +27,23 @@ test["get tile info"] = function()
   assert(tileInfo.numFrames == 8)
 end
 
-test["display image"] = function()
+test["1 display tiles"] = function()
+  local tiles = selector.findTilesByLayerName('Background')
+  for idx, tile in ipairs(tiles) do
+    tileInfo = tile.getTileInfo()
+    local options = {
+      width = tileInfo.width,
+      height = tileInfo.height,
+      numFrames = tileInfo.numFrames
+    }
+    local sheet = graphics.newImageSheet(tileInfo.fileName, options)
+    local frame = display.newImage(sheet, tileInfo.id)
+    frame.x = tile.coordinates.x
+    frame.y = tile.coordinates.y
+  end
+end
+
+test["2 display image"] = function()
   local tileInfo = mainBrownElement.getTileInfo()
   local options = {
     width = tileInfo.width,

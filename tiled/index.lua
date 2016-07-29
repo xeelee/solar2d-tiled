@@ -31,7 +31,7 @@ local function IndexBuilder(adapter)
 end
 
 
-local function Single(idxName, attrName)
+local function One2One(idxName, attrName)
   local self = {
     idxName = idxName,
     attrName = attrName
@@ -50,15 +50,28 @@ local function Single(idxName, attrName)
   return self
 end
 
-
-local function Multi(idxName, attrName)
-  local self = Single(idxName, attrName)
+local function One2Many(idxName, attrName)
+  local self = One2One(idxName, attrName)
 
   function self.apply(adapted, index)
-    for idx, val in ipairs(adapted[attrName]) do
+    for idx, val in ipairs(self.getValuesTable(adapted)) do
       if index[idxName][val] == nil then index[idxName][val] = {} end
       table.insert(index[idxName][val], adapted)
     end
+  end
+
+  function self.getValuesTable(adapted)
+    return {adapted[attrName]}
+  end
+
+  return self
+end
+
+local function Many2Many(idxName, attrName)
+  local self = One2Many(idxName, attrName)
+
+  function self.getValuesTable(adapted)
+    return adapted[attrName]
   end
 
   return self
@@ -81,9 +94,11 @@ local function Range(rangeFactory)
   return self
 end
 
+
 return {
   IndexBuilder = IndexBuilder,
-  Single = Single,
-  Multi = Multi,
+  One2One = One2One,
+  One2Many = One2Many,
+  Many2Many = Many2Many,
   Range = Range
 }
