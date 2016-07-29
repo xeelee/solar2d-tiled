@@ -2,10 +2,15 @@ display.setDefault("isImageSheetSampledInsideFrame", true)
 display.setStatusBar(display.HiddenStatusBar)
 
 local tiledSelector = require "tiled.selector"
+local corona = require "tiled.corona"
 local exampleTable1 = require "example1"
+
 local selector = tiledSelector.create(exampleTable1)
+
 local brownElements = selector.findObjectsByClass("brown")
+local yellowElements = selector.findObjectsByClass("yellow")
 local mainBrownElement = selector.getObjectById("brown-main-thing")
+local tiles = selector.findTilesByLayerName('Background')
 
 
 local testrunner = require "testrunner"
@@ -28,32 +33,22 @@ test["get tile info"] = function()
 end
 
 test["1 display tiles"] = function()
-  local tiles = selector.findTilesByLayerName('Background')
-  for idx, tile in ipairs(tiles) do
-    tileInfo = tile.getTileInfo()
-    local options = {
-      width = tileInfo.width,
-      height = tileInfo.height,
-      numFrames = tileInfo.numFrames
-    }
-    local sheet = graphics.newImageSheet(tileInfo.fileName, options)
-    local frame = display.newImage(sheet, tileInfo.id)
-    frame.x = tile.coordinates.x
-    frame.y = tile.coordinates.y
-  end
+  images = corona.newImages(tiles)
+  assert(#images == 64)
+  assert(images[tiles[1]] == images[1])
 end
 
 test["2 display image"] = function()
-  local tileInfo = mainBrownElement.getTileInfo()
-  local options = {
-    width = tileInfo.width,
-    height = tileInfo.height,
-    numFrames = tileInfo.numFrames
-  }
-  local sheet = graphics.newImageSheet(tileInfo.fileName, options)
-  local frame = display.newImage(sheet, tileInfo.id)
-  frame.x = mainBrownElement.coordinates.x
-  frame.y = mainBrownElement.coordinates.y
+  corona.newImages(brownElements)
+  corona.newImages(yellowElements)
+end
+
+test["sandbox"] = function()
+  local inspect = require "inspect"
+  print(inspect(tiles[35]))
+  print(inspect(mainBrownElement))
+  print(inspect(mainBrownElement.getTileInfo()))
+  print(inspect(tiles[1]))
 end
 
 testrunner.run(test)

@@ -84,7 +84,8 @@ local function ObjectAdapter(...)
       return model.Object(
         selector,
         data.layerName, data.objectData.gid,
-        data.objectData.x, data.objectData.y,
+        data.objectData.x,
+        data.objectData.y - data.objectData.height,
         data.objectData.properties.id, classes
       )
     end
