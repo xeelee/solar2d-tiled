@@ -30,7 +30,8 @@ return {
     selector = Selector(tiledTable)
     selector.addAdapter(adapter.Object(
         index.One2One("byId", "id"),
-        index.Many2Many("byClass", "classes")
+        index.Many2Many("byClass", "classes"),
+        index.One2Many("byLayerName", "layerName")
       ), function(index)
         return {
           getObjectById = function(id)
@@ -38,6 +39,9 @@ return {
           end,
           findObjectsByClass = function(class)
             return index.byClass[class]
+          end,
+          findObjectsByLayerName = function(layerName)
+            return index.byLayerName[layerName]
           end
         }
       end

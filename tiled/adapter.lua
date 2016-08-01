@@ -38,6 +38,7 @@ local function TileAdapter(...)
     local tileInfo = tile.getTileInfo()
     local x = data.objectData.x + tileInfo.width * data.horizontalOffset
     local y = data.objectData.y + tileInfo.height * data.verticalOffset
+    tile.setSize(tileInfo.width, tileInfo.height)
     tile.setCoordinates(x, y)
     return tile
   end
@@ -81,13 +82,34 @@ local function ObjectAdapter(...)
           table.insert(classes, class)
         end
       end
-      return model.Object(
-        selector,
-        data.layerName, data.objectData.gid,
-        data.objectData.x,
-        data.objectData.y - data.objectData.height,
-        data.objectData.properties.id, classes
-      )
+      if data.objectData.gid then
+        return model.Object(
+          selector,
+          data.layerName, data.objectData.gid,
+          data.objectData.x,
+          data.objectData.y - data.objectData.height,
+          data.objectData.width,
+          data.objectData.height,
+          data.objectData.properties.id, classes
+        )
+      elseif data.objectData.polyline then
+        return model.Shape(
+          data.layerName,
+          data.objectData.x,
+          data.objectData.y,
+          data.objectData.properties.id, classes,
+          data.objectData.polyline
+        )
+      else
+        return model.Rectangle(
+          data.layerName,
+          data.objectData.x,
+          data.objectData.y,
+          data.objectData.width,
+          data.objectData.height,
+          data.objectData.properties.id, classes
+        )
+      end
     end
   end
 

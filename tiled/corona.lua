@@ -1,3 +1,13 @@
+local function newPolygon(object)
+  return display.newPolygon(object.coordinates.x, object.coordinates.y, object.points)
+end
+
+
+local function newRect(object)
+    return display.newRect(object.coordinates.x, object.coordinates.y, object.width, object.height)
+end
+
+
 local function newImage(object)
   local tileInfo = object.getTileInfo()
   local options = {
@@ -9,8 +19,9 @@ local function newImage(object)
   local image = display.newImage(sheet, tileInfo.id)
   image.x = object.coordinates.x
   image.y = object.coordinates.y
-  image.anchorX = 0
-  image.anchorY = 0
+  -- debug
+  --image:setStrokeColor(1, 0, 0)
+  --image.strokeWidth = 1
   return image
 end
 
@@ -27,6 +38,8 @@ end
 
 
 return {
+  newPolygon = newPolygon,
+  newRect = newRect,
   newImage = newImage,
   newImages = newImages
 }

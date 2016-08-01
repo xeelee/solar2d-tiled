@@ -10,6 +10,7 @@ local selector = tiledSelector.create(exampleTable1)
 local brownElements = selector.findObjectsByClass("brown")
 local yellowElements = selector.findObjectsByClass("yellow")
 local mainBrownElement = selector.getObjectById("brown-main-thing")
+local mainYellowElement = selector.getObjectById("yellow-main-thing")
 local tiles = selector.findTilesByLayerName('Background')
 
 
@@ -32,6 +33,11 @@ test["get tile info"] = function()
   assert(tileInfo.numFrames == 8)
 end
 
+test["find objects by layer name"] = function()
+  local collisionObjects = selector.findObjectsByLayerName("Collision")
+  assert(#collisionObjects == 2)
+end
+
 test["1 display tiles"] = function()
   images = corona.newImages(tiles)
   assert(#images == 64)
@@ -41,14 +47,19 @@ end
 test["2 display image"] = function()
   corona.newImages(brownElements)
   corona.newImages(yellowElements)
+
+  local yellowShape = selector.getObjectById('yellow-shape')
+  local polygon = corona.newPolygon(yellowShape)
+
+  local brownShape = selector.getObjectById('brown-shape')
+  local polygon = corona.newPolygon(brownShape)
 end
 
-test["sandbox"] = function()
-  local inspect = require "inspect"
-  print(inspect(tiles[35]))
-  print(inspect(mainBrownElement))
-  print(inspect(mainBrownElement.getTileInfo()))
-  print(inspect(tiles[1]))
+test["display colision rectangles"] = function()
+  local objects = selector.findObjectsByLayerName("Collision")
+  for idx, object in ipairs(objects) do
+    corona.newRect(object)
+  end
 end
 
 testrunner.run(test)
