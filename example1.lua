@@ -202,7 +202,9 @@ return {
             { x = 0.5, y = 1 }
           },
           properties = {
-            ["id"] = "yellow-shape"
+            ["id"] = "yellow-shape",
+            ["offsetX"] = -5,
+            ["offsetY"] = 4
           }
         },
         {
@@ -227,7 +229,9 @@ return {
             { x = 0.5, y = 1 }
           },
           properties = {
-            ["id"] = "brown-shape"
+            ["id"] = "brown-shape",
+            ["offsetX"] = -1,
+            ["offsetY"] = -2
           }
         }
       }

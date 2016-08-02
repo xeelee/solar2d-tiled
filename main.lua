@@ -1,11 +1,16 @@
 display.setDefault("isImageSheetSampledInsideFrame", true)
 display.setStatusBar(display.HiddenStatusBar)
 
+local physics = require "physics"
+--physics.setDrawMode("hybrid")
+physics.start()
+
 local tiledSelector = require "tiled.selector"
 local corona = require "tiled.corona"
 local exampleTable1 = require "example1"
 
 local selector = tiledSelector.create(exampleTable1)
+local physicsMaker = corona.PhysicsMaker{density=3.0, friction=0.5, bounce=0.3}
 
 local brownElements = selector.findObjectsByClass("brown")
 local yellowElements = selector.findObjectsByClass("yellow")
@@ -45,20 +50,23 @@ test["1 display tiles"] = function()
 end
 
 test["2 display image"] = function()
-  corona.newImages(brownElements)
-  corona.newImages(yellowElements)
+  local brownImages = corona.newImages(brownElements)
+  local yellowImages = corona.newImages(yellowElements)
 
   local yellowShape = selector.getObjectById('yellow-shape')
-  local polygon = corona.newPolygon(yellowShape)
+  corona.newPolygon(yellowShape)
+  physicsMaker.addBody(yellowImages[mainYellowElement], yellowShape)
 
   local brownShape = selector.getObjectById('brown-shape')
-  local polygon = corona.newPolygon(brownShape)
+  corona.newPolygon(brownShape)
+  physicsMaker.addBody(brownImages[mainBrownElement], brownShape)
 end
 
 test["display colision rectangles"] = function()
   local objects = selector.findObjectsByLayerName("Collision")
   for idx, object in ipairs(objects) do
-    corona.newRect(object)
+    local rect = corona.newRect(object)
+    physicsMaker.addStaticBody(rect)
   end
 end
 

@@ -42,7 +42,7 @@ local function Rectangle(layerName, x, y, width, height, id, classes)
 end
 
 
-local function Shape(layerName, x, y, id, classes, polyline)
+local function Shape(layerName, x, y, id, classes, polyline, offsetX, offsetY)
   local self = Rectangle(layerName, x, y, nil, nil, id, classes)
   self.points = {}
   self.minX = 9999
@@ -50,19 +50,25 @@ local function Shape(layerName, x, y, id, classes, polyline)
   self.maxX = 0
   self.maxY = 0
 
+  local offsetX = offsetX or 0
+  local offsetY = offsetY or 0
+
+  -- TODO: refactor
+
   for idx, pair in ipairs(polyline) do
     if pair.x < self.minX then self.minX = pair.x end
     if pair.y < self.minY then self.minY = pair.y end
     if pair.x > self.maxX then self.maxX = pair.x end
     if pair.y > self.maxY then self.maxY = pair.y end
-    table.insert(self.points, pair.x)
-    table.insert(self.points, pair.y)
   end
-
-  -- TODO: refactor
 
   self.setSize(self.maxX - self.minX, self.maxY - self.minY)
   self.setCoordinates(x + self.minX, y + self.minY)
+
+  for idx, pair in ipairs(polyline) do
+    table.insert(self.points, pair.x + x - self.coordinates.x + offsetX)
+    table.insert(self.points, pair.y + y - self.coordinates.y + offsetY)
+  end
 
   return self
 end

@@ -1,3 +1,6 @@
+local physics = require "physics"
+
+
 local function newPolygon(object)
   return display.newPolygon(object.coordinates.x, object.coordinates.y, object.points)
 end
@@ -37,9 +40,27 @@ local function newImages(objectTable)
 end
 
 
+local function PhysicsMaker(options)
+  local self = {}
+
+  function self.addBody(displayObject, shape)
+    local params = {shape=shape.points}
+    setmetatable(params, options)
+    physics.addBody(displayObject, params)
+  end
+
+  function self.addStaticBody(displayObject)
+    physics.addBody(displayObject, "static", options)
+  end
+
+  return self
+end
+
+
 return {
   newPolygon = newPolygon,
   newRect = newRect,
   newImage = newImage,
-  newImages = newImages
+  newImages = newImages,
+  PhysicsMaker = PhysicsMaker
 }

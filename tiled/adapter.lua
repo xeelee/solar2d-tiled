@@ -98,7 +98,9 @@ local function ObjectAdapter(...)
           data.objectData.x,
           data.objectData.y,
           data.objectData.properties.id, classes,
-          data.objectData.polyline
+          data.objectData.polyline,
+          data.objectData.properties.offsetX,
+          data.objectData.properties.offsetY
         )
       else
         return model.Rectangle(
