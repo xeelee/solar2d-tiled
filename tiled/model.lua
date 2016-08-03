@@ -6,14 +6,9 @@ local function BaseObject(layerName, x, y, width, height)
   }
 
   function self.setCoordinates(x, y)
-    -- FIXME: delegate to separate object
-    local _width = self.width or 0
-    local _height = self.height or 0
-    local _x = x or 0
-    local _y = y or 0
     self.coordinates = {
-      x = _x + _width / 2,
-      y = _y + _height / 2
+      x = x + self.width / 2,
+      y = y + self.height / 2
     }
   end
 
@@ -43,32 +38,37 @@ end
 
 
 local function Shape(layerName, x, y, id, classes, polyline, offsetX, offsetY)
-  local self = Rectangle(layerName, x, y, nil, nil, id, classes)
-  self.points = {}
-  self.minX = 9999
-  self.minY = 9999
-  self.maxX = 0
-  self.maxY = 0
+  local points = {}
+  local bounds = {
+    minX = 9999,
+    minY = 9999,
+    maxX = 0,
+    maxY = 0
+  }
 
   local offsetX = offsetX or 0
   local offsetY = offsetY or 0
 
-  -- TODO: refactor
-
   for idx, pair in ipairs(polyline) do
-    if pair.x < self.minX then self.minX = pair.x end
-    if pair.y < self.minY then self.minY = pair.y end
-    if pair.x > self.maxX then self.maxX = pair.x end
-    if pair.y > self.maxY then self.maxY = pair.y end
+    if pair.x < bounds.minX then bounds.minX = pair.x end
+    if pair.y < bounds.minY then bounds.minY = pair.y end
+    if pair.x > bounds.maxX then bounds.maxX = pair.x end
+    if pair.y > bounds.maxY then bounds.maxY = pair.y end
   end
 
-  self.setSize(self.maxX - self.minX, self.maxY - self.minY)
-  self.setCoordinates(x + self.minX, y + self.minY)
+  local self = Rectangle(
+    layerName,
+    x + bounds.minX, y + bounds.minY,
+    bounds.maxX - bounds.minX, bounds.maxY - bounds.minY,
+    id, classes
+  )
 
   for idx, pair in ipairs(polyline) do
-    table.insert(self.points, pair.x + x - self.coordinates.x + offsetX)
-    table.insert(self.points, pair.y + y - self.coordinates.y + offsetY)
+    table.insert(points, pair.x + x - self.coordinates.x + offsetX)
+    table.insert(points, pair.y + y - self.coordinates.y + offsetY)
   end
+
+  self.points = points
 
   return self
 end

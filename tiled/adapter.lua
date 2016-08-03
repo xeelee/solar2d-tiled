@@ -34,7 +34,7 @@ local function TileAdapter(...)
   end
 
   function self.adaptData(selector, data)
-    local tile = model.Tile(selector, data.layerName, data.gid)
+    local tile = model.Tile(selector, data.layerName, data.gid, 0, 0, 0, 0)
     local tileInfo = tile.getTileInfo()
     local x = data.objectData.x + tileInfo.width * data.horizontalOffset
     local y = data.objectData.y + tileInfo.height * data.verticalOffset
