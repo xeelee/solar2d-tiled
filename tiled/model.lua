@@ -37,24 +37,10 @@ local function Rectangle(layerName, x, y, width, height, id, classes)
 end
 
 
-local function Shape(layerName, x, y, id, classes, polyline, offsetX, offsetY)
-  local points = {}
-  local bounds = {
-    minX = 9999,
-    minY = 9999,
-    maxX = 0,
-    maxY = 0
-  }
-
+local function Shape(layerName, x, y, id, classes, boundsFactory, offsetX, offsetY)
   local offsetX = offsetX or 0
   local offsetY = offsetY or 0
-
-  for idx, pair in ipairs(polyline) do
-    if pair.x < bounds.minX then bounds.minX = pair.x end
-    if pair.y < bounds.minY then bounds.minY = pair.y end
-    if pair.x > bounds.maxX then bounds.maxX = pair.x end
-    if pair.y > bounds.maxY then bounds.maxY = pair.y end
-  end
+  local bounds = boundsFactory.makeBounds()
 
   local self = Rectangle(
     layerName,
@@ -63,12 +49,10 @@ local function Shape(layerName, x, y, id, classes, polyline, offsetX, offsetY)
     id, classes
   )
 
-  for idx, pair in ipairs(polyline) do
-    table.insert(points, pair.x + x - self.coordinates.x + offsetX)
-    table.insert(points, pair.y + y - self.coordinates.y + offsetY)
-  end
-
-  self.points = points
+  self.points = boundsFactory.createPoints(
+    x - self.coordinates.x + offsetX,
+    y - self.coordinates.y + offsetY
+  )
 
   return self
 end
@@ -120,10 +104,46 @@ local function Tileset(firstGid, image, tileWidth, tileHeight, imageWidth, image
 end
 
 
+local function BoundsFactory(polyline)
+  local self = {}
+
+  function self.makeBounds()
+    local bounds = {
+      minX = 9999,
+      minY = 9999,
+      maxX = 0,
+      maxY = 0
+    }
+
+    for idx, pair in ipairs(polyline) do
+      if pair.x < bounds.minX then bounds.minX = pair.x end
+      if pair.y < bounds.minY then bounds.minY = pair.y end
+      if pair.x > bounds.maxX then bounds.maxX = pair.x end
+      if pair.y > bounds.maxY then bounds.maxY = pair.y end
+    end
+
+    return bounds
+  end
+
+  function self.createPoints(fullOffsetX, fullOffsetY)
+    local points = {}
+
+    for idx, pair in ipairs(polyline) do
+      table.insert(points, pair.x + fullOffsetX)
+      table.insert(points, pair.y + fullOffsetY)
+    end
+
+    return points
+  end
+
+  return self
+end
+
 return {
   Tile = Tile,
   Object = Object,
   Rectangle = Rectangle,
   Shape = Shape,
-  Tileset = Tileset
+  Tileset = Tileset,
+  BoundsFactory = BoundsFactory
 }
