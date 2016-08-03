@@ -87,16 +87,16 @@ selector.addAdapter(adapter.Object(
     index.One2Many("byGid", "tileGid")
   ), function(index)
     return {
-      getObjectByTileGid = function(gid)
+      findObjectsByTileGid = function(gid)
         return index.byGid[gid]
       end
     }
   end
 )
 ```
-This adds method `getObjectByTileGid` to selector. Object has to contain `tileGid` attribute to be indexed (and found) by method.
+This adds method `findObjectsByTileGid` to selector. Object must contain `tileGid` attribute to be indexed (and found) by method.
 
-* for more examples please review `main.lua` module
+* for more examples see `main.lua` module
 
 ### Contact ###
 rzeszut.michal@gmail.com
