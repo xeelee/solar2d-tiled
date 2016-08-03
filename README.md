@@ -66,8 +66,10 @@ This helper method takes object found by selector as an argument and returns reg
 
 ```
 #!lua
-local object = selector.getElementById('some-unique-id')
-local shape = selector.getElementById('shape-for-my-object')
+local corona = require "tiled.corona"
+
+local object = selector.getObjectById('some-unique-id')
+local shape = selector.getObjectById('shape-for-my-object')
 local params = {shape=shape.points, density=3.0, friction=0.5, bounce=0.3}
 local image = corona.newImage(object)
 physics.addBody(image, params)
@@ -77,6 +79,7 @@ physics.addBody(image, params)
 
 ```
 #!lua
+local index = require "tiled.index"
 
 selector.addAdapter(adapter.Object(
     index.One2Many("byGid", "tileGid")
