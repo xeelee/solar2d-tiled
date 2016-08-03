@@ -80,6 +80,8 @@ physics.addBody(image, params)
 ```
 #!lua
 local index = require "tiled.index"
+local adapter = require "tiled.adapter"
+local physics = require "physics"
 
 selector.addAdapter(adapter.Object(
     index.One2Many("byGid", "tileGid")
