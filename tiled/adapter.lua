@@ -18,13 +18,15 @@ local function TileAdapter(...)
             horizontalOffset = ((dataIdx - 1) % layer.width)
             verticalOffset = math.floor((dataIdx - 1) / layer.width)
             dataIdx = dataIdx + 1
-            return {
-              objectData = layer,
-              gid = gid,
-              layerName = layer.name,
-              horizontalOffset = horizontalOffset,
-              verticalOffset = verticalOffset
-            }
+            if gid > 0 then -- do not return tiles without image
+              return {
+                objectData = layer,
+                gid = gid,
+                layerName = layer.name,
+                horizontalOffset = horizontalOffset,
+                verticalOffset = verticalOffset
+              }
+            end
           end
         end
         dataIdx = 1
