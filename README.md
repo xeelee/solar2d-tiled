@@ -1,6 +1,6 @@
 # Corona Tiled #
 
-Library for connecting [Corona SDK](https://coronalabs.com/) with [Tiled Map Editor](http://www.mapeditor.org/)
+Library for connecting [Solar2D Game Engine](https://solar2d.com/) (previously known as Corona SDK) with [Tiled Map Editor](http://www.mapeditor.org/)
 
 ### Features ###
 * Extendable selector for objects defined in tilemap (lua export format)
@@ -14,7 +14,7 @@ Library for connecting [Corona SDK](https://coronalabs.com/) with [Tiled Map Edi
 
 ### Repository structure ###
 
-* The whole repo is Corona SDK project
+* The whole repo is Solar2D Game Engine project
 * Library code resides in `tiled` directory (it can be included in other project by copying or creating symlink)
 * Code snippets can be found in `main.lua` (it is also very simple test suite which is executed after corona simulator starts)
 * `corona.lua` module contains helper methods which usually can do common operations on selector results
