@@ -36,8 +36,7 @@ Library for connecting [Solar2D Game Engine](https://solar2d.com/) (previously k
 ### Examples ###
 * create selector
 
-```
-#!lua
+```lua
 local exportedTable = require "exported"
 local tiledSelector = require "tiled.selector"
 local selector = tiledSelector.create(exportedTable)
@@ -46,26 +45,21 @@ Tilemap has to be exported to `exported.lua` file and placed in project director
 
 * get object by id
 
-```
-#!lua
-
+```lua
 local proxyObject = selector.getObjectById("some-unique-id")
 ```
 You have to set custom property `id` with (string) value `some-unique-id` in Tiled map editor object property inspector.
 
 * display object above
 
-```
-#!lua
-
+```lua
 local image = corona.newImage(proxyObject)
 ```
 This helper method takes object found by selector as an argument and returns regular Corona SDK `DisplayObject`
 
 * add polygonal shape physics body to image
 
-```
-#!lua
+```lua
 local corona = require "tiled.corona"
 
 local object = selector.getObjectById('some-unique-id')
@@ -77,8 +71,7 @@ physics.addBody(image, params)
 
 * extend selector with method
 
-```
-#!lua
+```lua
 local index = require "tiled.index"
 local adapter = require "tiled.adapter"
 local physics = require "physics"
